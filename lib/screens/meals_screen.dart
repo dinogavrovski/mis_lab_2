@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'recipe_detail_screen.dart';
+import 'favorite_screen.dart';
 
 class MealsScreen extends StatefulWidget {
   final String category;
@@ -14,6 +15,9 @@ class _MealsScreenState extends State<MealsScreen> {
   List meals = [];
   List filtered = [];
 
+  // Store favorites
+  List favorites = [];
+
   @override
   void initState() {
     super.initState();
@@ -22,23 +26,66 @@ class _MealsScreenState extends State<MealsScreen> {
 
   void load() async {
     meals = await ApiService.getMealsByCategory(widget.category);
-    filtered = meals;
+    // Initialize isFavorite
+    meals = meals
+        .map(
+          (m) => {
+            'idMeal': m['idMeal'],
+            'strMeal': m['strMeal'],
+            'strMealThumb': m['strMealThumb'],
+            'isFavorite': false,
+          },
+        )
+        .toList();
+    filtered = List.from(meals);
     setState(() {});
   }
 
   void search(String text) async {
     if (text.isEmpty) {
-      filtered = meals;
+      filtered = List.from(meals);
     } else {
-      filtered = await ApiService.searchMeals(text);
+      filtered = meals
+          .where(
+            (m) => m['strMeal'].toString().toLowerCase().contains(
+              text.toLowerCase(),
+            ),
+          )
+          .toList();
     }
     setState(() {});
+  }
+
+  void toggleFavorite(Map meal) {
+    setState(() {
+      meal['isFavorite'] = !meal['isFavorite'];
+      if (meal['isFavorite']) {
+        favorites.add(meal);
+      } else {
+        favorites.removeWhere((m) => m['idMeal'] == meal['idMeal']);
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.category)),
+      appBar: AppBar(
+        title: Text(widget.category),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => FavoriteScreen(favorites: favorites),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Padding(
@@ -59,6 +106,8 @@ class _MealsScreenState extends State<MealsScreen> {
               itemCount: filtered.length,
               itemBuilder: (context, i) {
                 final m = filtered[i];
+                final isFav = m['isFavorite'] == true;
+
                 return GestureDetector(
                   onTap: () => Navigator.push(
                     context,
@@ -66,10 +115,28 @@ class _MealsScreenState extends State<MealsScreen> {
                       builder: (_) => RecipeDetailScreen(id: m['idMeal']),
                     ),
                   ),
-                  child: Column(
+                  child: Stack(
                     children: [
-                      Image.network(m['strMealThumb'], height: 100),
-                      Text(m['strMeal']),
+                      Column(
+                        children: [
+                          Image.network(m['strMealThumb'], height: 100),
+                          Text(m['strMeal']),
+                        ],
+                      ),
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: GestureDetector(
+                          onTap: () => toggleFavorite(m),
+                          child: CircleAvatar(
+                            backgroundColor: Colors.grey.withOpacity(0.7),
+                            child: Icon(
+                              isFav ? Icons.favorite : Icons.favorite_border,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 );

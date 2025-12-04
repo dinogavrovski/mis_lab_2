@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "920101289654",
+    "project_id": "recipeprojectdino",
+    "storage_bucket": "recipeprojectdino.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:920101289654:android:fe0147b67cb5c0ba167017",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtKTgl4fjxpi2Db2hFk6otKPVk_nf8JEg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
